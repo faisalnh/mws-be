@@ -19,10 +19,24 @@ class EmotionalCheckinResource extends JsonResource
             'user_id' => $this->user_id,
             'role' => $this->role,
             'mood' => $this->mood,
-            'intensity' => $this->intensity,
+            'internal_weather' => $this->internal_weather,
+            'energy_level' => $this->energy_level,
+            'balance' => $this->balance,
+            'load' => $this->load,
+            'readiness' => $this->readiness,
+            'contact_id' => $this->contact_id === 'no_need' ? 'no_need' : $this->contact_id,
+            'presence_level' => $this->presence_level,
+            'capasity_level' => $this->capasity_level,
             'note' => $this->note,
             'checked_in_at' => $this->checked_in_at,
             'created_at' => $this->created_at,
+
+            'user' => $this->whenLoaded('user', function () {
+                return [
+                    'id' => $this->user->id,
+                    'name' => $this->user->name,
+                ];
+            }),
         ];
     }
 }

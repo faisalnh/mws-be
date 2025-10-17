@@ -22,9 +22,16 @@ class UpdateEmotionalCheckinRequest extends FormRequest
     public function rules(): array
     {
         return [
+            'internal_weather' => 'nullable|string|max:50',
             'mood' => 'nullable|string|max:50',
-            'intensity' => 'nullable|integer|min:1|max:10',
+            'presence_level' => 'nullable|integer|min:1|max:10',
+            'capasity_level' => 'nullable|integer|min:1|max:10',
+            'energy_level' => 'nullable|in:low,medium,high',
+            'balance' => 'nullable|in:unbalanced,balanced,highly_balanced',
+            'load' => 'nullable|in:light,moderate,heavy',
+            'readiness' => 'nullable|in:not_ready,somewhat_ready,ready',
             'note' => 'nullable|string|max:500',
+            'contact_id' => 'nullable|integer|exists:users,id',
             'checked_in_at' => 'nullable|date',
         ];
     }

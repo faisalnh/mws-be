@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
-class ClassRoom extends Model
+class Clasess extends Model
 {
     use HasFactory, HasUuids, SoftDeletes;
 
@@ -24,5 +24,10 @@ class ClassRoom extends Model
     public function admissions()
     {
         return $this->hasMany(Admission::class, 'class_id');
+    }
+
+    public function students()
+    {
+        return $this->hasMany(\App\Models\User::class, 'class_id');
     }
 }

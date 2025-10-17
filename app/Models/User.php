@@ -25,6 +25,7 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'class_id',
     ];
 
     protected static function booted()
@@ -46,11 +47,6 @@ class User extends Authenticatable
         'password' => 'hashed',
     ];
 
-    public function getAuthIdentifierName()
-    {
-        return $this->primaryKey; // Laravel Auth akan pakai uuid
-    }
-
     public function profile()
     {
         return $this->hasOne(Profile::class, 'user_uuid', 'uuid');
@@ -70,16 +66,15 @@ class User extends Authenticatable
             ->withTimestamps();
     }
 
-    public function classEnrollments()
+    public function class()
     {
-        return $this->belongsToMany(ClassRoom::class, 'class_students', 'student_uuid', 'class_uuid')
-            ->withPivot(['enrolled_at', 'status'])
-            ->withTimestamps();
+        return $this->belongsTo(Clasess::class, 'class_id', 'id');
     }
+
 
     public function teachingClasses()
     {
-        return $this->belongsToMany(ClassRoom::class, 'class_teachers', 'teacher_uuid', 'class_uuid')
+        return $this->belongsToMany(Clasess::class, 'class_teachers', 'teacher_uuid', 'class_uuid')
             ->withPivot(['role'])
             ->withTimestamps();
     }

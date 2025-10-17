@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\Admin\Update;
 
+use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\Password;
 use Illuminate\Foundation\Http\FormRequest;
 
@@ -27,14 +28,11 @@ class UpdateUserRequest extends FormRequest
             'name' => 'required|string|max:150',
             'email' => "required|string|email|max:150|unique:users,email,{$userId},uuid",
             'password' => ['nullable', 'confirmed', Password::min(6)->mixedCase()->letters()->numbers()],
-            'status' => 'nullable|in:active,inactive',
-
-            // Profiles table
-            'gender' => 'nullable|in:male,female',
-            'date_of_birth' => 'nullable|date',
-            'phone' => 'nullable|string|max:30',
-            'address' => 'nullable|string',
-            'avatar_url' => 'nullable|url|max:255',
+            'class_id' => [
+                'nullable',
+                Rule::requiredIf(fn() => $this->role === 'student'),
+                'exists:classes,id',
+            ],
         ];
     }
 }

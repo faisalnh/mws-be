@@ -2,11 +2,13 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Seeder;
-use Illuminate\Support\Str;
 use App\Models\Role;
-use App\Models\Permission;
 use App\Models\User;
+use App\Models\Permission;
+use Illuminate\Support\Str;
+use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
 
 class PermissionUserSeeder extends Seeder
 {
@@ -14,7 +16,7 @@ class PermissionUserSeeder extends Seeder
     {
         $guard = 'sanctum';
 
-        // Daftar permission
+        // ================= Permissions =================
         $permissions = [
             'index user',
             'get user',
@@ -45,7 +47,7 @@ class PermissionUserSeeder extends Seeder
         $adminUser = User::firstOrCreate(
             ['email' => 'admin@example.com'],
             [
-                'name' => 'Administrator',
+                'name' => 'Super Admin',
                 'password' => bcrypt('password'),
                 'uuid' => (string) Str::uuid(),
             ]
@@ -59,49 +61,207 @@ class PermissionUserSeeder extends Seeder
             ['name' => 'Teacher', 'guard_name' => $guard],
             ['uuid' => (string) Str::uuid()]
         );
-        // Assign hanya permission tertentu untuk Teacher
+
         $teacherPermissions = Permission::whereIn('name', [
             'index emotional checkin',
             'get emotional checkin',
             'create emotional checkin',
             'update emotional checkin',
         ])->get();
+
         $teacherRole->givePermissionTo($teacherPermissions);
 
-        $teacherUser = User::firstOrCreate(
-            ['email' => 'teacher@example.com'],
-            [
-                'name' => 'Teacher',
-                'password' => bcrypt('password'),
-                'uuid' => (string) Str::uuid(),
-            ]
-        );
-        if (!$teacherUser->hasRole('Teacher')) {
-            $teacherUser->assignRole($teacherRole);
+        $teachers = [
+            ['name' => 'Ms. Latifah', 'email' => 'latifah.teacher@example.com'],
+            ['name' => 'Ms. Kholida', 'email' => 'kholida.teacher@example.com'],
+            ['name' => 'Mr. Aria', 'email' => 'aria.teacher@example.com'],
+            ['name' => 'Ms. Hana', 'email' => 'hana.teacher@example.com'],
+            ['name' => 'Ms. Wina', 'email' => 'wina.teacher@example.com'],
+            ['name' => 'Ms. Sarah', 'email' => 'sarah.teacher@example.com'],
+            ['name' => 'Ms. Hanny', 'email' => 'hanny.teacher@example.com'],
+            ['name' => 'Pak Dodi', 'email' => 'dodi.teacher@example.com'],
+            ['name' => 'Pak Faisal', 'email' => 'faisal.teacher@example.com'],
+        ];
+
+        foreach ($teachers as $teacher) {
+            $user = User::firstOrCreate(
+                ['email' => $teacher['email']],
+                [
+                    'name' => $teacher['name'],
+                    'password' => bcrypt('password'),
+                    'uuid' => (string) Str::uuid(),
+                ]
+            );
+
+            if (!$user->hasRole('Teacher')) {
+                $user->assignRole($teacherRole);
+            }
         }
+
+        $this->command->info('✅ Semua guru berhasil dibuat dan diberi role Teacher.');
 
         // ================= Student =================
         $studentRole = Role::firstOrCreate(
             ['name' => 'Student', 'guard_name' => $guard],
             ['uuid' => (string) Str::uuid()]
         );
-        // Assign hanya permission tertentu untuk Student
+
         $studentPermissions = Permission::whereIn('name', [
             'index emotional checkin',
             'get emotional checkin',
-        ])->get();
+            'create emotional checkin',
+            'update emotional checkin',
+            'delete emotional checkin',
+        ])
+            ->where('guard_name', $guard)
+            ->get();
+
         $studentRole->givePermissionTo($studentPermissions);
 
-        $studentUser = User::firstOrCreate(
-            ['email' => 'student@example.com'],
+        $allClasses = DB::table('classes')->get();
+
+        foreach ($allClasses as $class) {
+            echo "ID: {$class->id}, Name: {$class->name}, Grade Level: {$class->grade_level}\n";
+        }
+
+        $dummyClass = $allClasses->firstWhere('name', 'Kelas SD B');
+
+        if (!$dummyClass) {
+            $this->command->warn('⚠️ Tidak ada data di tabel classes. Jalankan ClassSeeder terlebih dahulu.');
+            return;
+        }
+
+        $students = [
+            ['name' => 'Nafisa Angelica Qurrota Aini', 'email' => 'nafisa@millennia21.id'],
+            ['name' => 'Mikail Rasyefki', 'email' => 'michael@millennia21.id'],
+            ['name' => 'Kenisha Azkayra Prabawa', 'email' => 'kenisha@millennia21.id'],
+            ['name' => 'Aydira Malaika Ridwansyah', 'email' => 'aydira@millennia21.id'],
+            ['name' => 'Prinz Averey Ikhsan', 'email' => 'prinz@millennia21.id'],
+            ['name' => 'Putri Athena Mutiksari', 'email' => 'athena@millennia21.id'],
+            ['name' => 'Dindi Seraphina', 'email' => 'dindi@millennia21.id'],
+            ['name' => 'Gaea Alandra Ardhanny', 'email' => 'gaea.alandra@millennia21.id'],
+            ['name' => 'Aralt Cendekia Wicaksono', 'email' => 'aralt.wicaksono@millennia21.id'],
+            ['name' => 'Muhammad Rafif Cakradinata', 'email' => 'muhammad.rafif@millennia21.id'],
+        ];
+
+        foreach ($students as $student) {
+            $studentUser = User::updateOrCreate(
+                ['email' => $student['email']],
+                [
+                    'uuid' => (string) Str::uuid(),
+                    'name' => $student['name'],
+                    'password' => bcrypt('password123'),
+                    'class_id' => $dummyClass->id,
+                ]
+            );
+
+            if (!$studentUser->hasRole('Student')) {
+                $studentUser->assignRole($studentRole);
+            }
+        }
+
+        $this->command->info('✅ ' . count($students) . ' Student users berhasil dibuat dengan class_id: ' . $dummyClass->id);
+
+        // ================= Parent =================
+        $parentRole = Role::firstOrCreate(
+            ['name' => 'Parent', 'guard_name' => $guard],
+            ['uuid' => (string) Str::uuid()]
+        );
+
+        $parentPermissions = Permission::whereIn('name', [
+            'index emotional checkin',
+            'get emotional checkin',
+        ])->get();
+        $parentRole->givePermissionTo($parentPermissions);
+
+        $parentUser = User::firstOrCreate(
+            ['email' => 'parent@example.com'],
             [
-                'name' => 'Student',
+                'name' => 'Parent',
                 'password' => bcrypt('password'),
                 'uuid' => (string) Str::uuid(),
             ]
         );
-        if (!$studentUser->hasRole('Student')) {
-            $studentUser->assignRole($studentRole);
+        if (!$parentUser->hasRole('Parent')) {
+            $parentUser->assignRole($parentRole);
         }
+
+        // ================= Staff =================
+        $staffRole = Role::firstOrCreate(
+            ['name' => 'Staff', 'guard_name' => $guard],
+            ['uuid' => (string) Str::uuid()]
+        );
+
+        $staffPermissions = Permission::whereIn('name', [
+            'index user',
+            'get user',
+        ])->get();
+        $staffRole->givePermissionTo($staffPermissions);
+
+        $staffUser = User::firstOrCreate(
+            ['email' => 'staff@example.com'],
+            [
+                'name' => 'Staff',
+                'password' => bcrypt('password'),
+                'uuid' => (string) Str::uuid(),
+            ]
+        );
+        if (!$staffUser->hasRole('Staff')) {
+            $staffUser->assignRole($staffRole);
+        }
+
+        // ================= Director =================
+        $directorRole = Role::firstOrCreate(
+            ['name' => 'Director', 'guard_name' => $guard],
+            ['uuid' => (string) Str::uuid()]
+        );
+
+        $directorPermissions = Permission::whereIn('name', [
+            'index user',
+            'get user',
+            'index emotional checkin',
+        ])->get();
+        $directorRole->givePermissionTo($directorPermissions);
+
+        $directorUser = User::firstOrCreate(
+            ['email' => 'Ms.Mahrukh@example.com'],
+            [
+                'name' => 'Ms.Mahrukh',
+                'password' => bcrypt('password'),
+                'uuid' => (string) Str::uuid(),
+            ]
+        );
+        if (!$directorUser->hasRole('Director')) {
+            $directorUser->assignRole($directorRole);
+        }
+
+        // ================= Headmaster =================
+        $headmasterRole = Role::firstOrCreate(
+            ['name' => 'Headmaster', 'guard_name' => $guard],
+            ['uuid' => (string) Str::uuid()]
+        );
+
+        $headmasterPermissions = Permission::whereIn('name', [
+            'index user',
+            'get user',
+            'index emotional checkin',
+        ])->get();
+
+        $headmasterRole->givePermissionTo($headmasterPermissions);
+
+        $headmasterUser = User::firstOrCreate(
+            ['email' => 'arya.headmaster@example.com'],
+            [
+                'name' => 'Pak Arya',
+                'password' => bcrypt('password'),
+                'uuid' => (string) Str::uuid(),
+            ]
+        );
+
+        if (!$headmasterUser->hasRole('Headmaster')) {
+            $headmasterUser->assignRole($headmasterRole);
+        }
+
+        $this->command->info('✅ Headmaster (Pak Arya) berhasil dibuat dan diberi role Headmaster.');
     }
 }

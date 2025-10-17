@@ -34,7 +34,7 @@ class EmotionalCheckinsController extends Controller
     {
         $query = $request->validated();
 
-        $result = $this->emotionalCheckinService->searchEmotionalCheckin(['user'], 10, $query['search'] ?? null);
+        $result = $this->emotionalCheckinService->searchEmotionalCheckin(['user','contact'], 10, $query['search'] ?? null);
 
         return $this->emotionalCheckinService->successPaginate(EmotionalCheckinResource::collection($result),200);
     }
@@ -48,6 +48,8 @@ class EmotionalCheckinsController extends Controller
 
         $result = $this->emotionalCheckinService->createEmotionalCheckin($data);
 
+        $result->load(['user', 'contact']);
+
         return $this->emotionalCheckinService->success(new DetailEmotionalCheckinResource($result),200,'Created Emotional Check-in Successfully'
         );
     }
@@ -57,7 +59,7 @@ class EmotionalCheckinsController extends Controller
      */
     public function get(string $uuid)
     {
-        $result = $this->emotionalCheckinService->findByUuidWithRelation($uuid, ['user']);
+        $result = $this->emotionalCheckinService->findByUuidWithRelation($uuid, ['user', 'contact']);
 
         return $this->emotionalCheckinService->success(
             new DetailEmotionalCheckinResource($result),
@@ -73,6 +75,8 @@ class EmotionalCheckinsController extends Controller
         $data = $request->validated();
 
         $result = $this->emotionalCheckinService->updateEmotionalCheckin($uuid, $data);
+
+        $result->load(['user', 'contact']);
 
         return $this->emotionalCheckinService->success(new DetailEmotionalCheckinResource($result),200,'Updated Emotional Check-in Successfully');
     }

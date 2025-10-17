@@ -18,7 +18,6 @@ class UserResource extends JsonResource
             'uuid' => $this->uuid,
             'name' => $this->name,
             'email' => $this->email,
-            'status' => ucfirst($this->status), // tampilkan 'Active' / 'Inactive'
             'email_verified' => $this->email_verified_at ? true : false,
             'email_verified_at' => $this->email_verified_at
                 ? $this->email_verified_at->format('Y-m-d H:i:s')
@@ -32,6 +31,17 @@ class UserResource extends JsonResource
             'updated_at' => $this->updated_at
                 ? $this->updated_at->format('Y-m-d H:i:s')
                 : null,
+
+            'class' => $this->when(
+                $this->role === 'student',
+                function () {
+                    return [
+                        'id' => $this->classRoom->id ?? null,
+                        'name' => $this->classRoom->name ?? null,
+                        'type' => $this->classRoom->type ?? null,
+                    ];
+                }
+            ),
         ];
     }
 }

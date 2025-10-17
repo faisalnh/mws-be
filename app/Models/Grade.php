@@ -56,6 +56,6 @@ class Grade extends Model
      */
     public function classes()
     {
-        return $this->hasMany(ClassRoom::class, 'grade_id');
+        return $this->hasMany(Clasess::class, 'grade_id');
     }
 }

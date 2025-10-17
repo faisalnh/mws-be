@@ -30,7 +30,7 @@ class ClassTeacher extends Model
      */
     public function class()
     {
-        return $this->belongsTo(ClassRoom::class, 'class_id');
+        return $this->belongsTo(Clasess::class, 'class_id');
     }
 
     /**

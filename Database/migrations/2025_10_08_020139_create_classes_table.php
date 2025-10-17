@@ -21,19 +21,11 @@ return new class extends Migration
             $table->string('name', 150);
 
             // Enum type sesuai rancangan (class_type)
-            $table->enum('type', [
-                'regular',
-                'integral',
-                'self_exploration',
-                'project_work',
-                'group_discussion'
+            $table->enum('grade_level', [
+                'sd',
+                'smp',
             ])->nullable();
 
-            // Kapasitas siswa
-            $table->integer('capacity')->nullable();
-
-            // Catatan tambahan
-            $table->text('note')->nullable();
 
             // Timestamp default Laravel (created_at & updated_at)
             $table->timestamps();

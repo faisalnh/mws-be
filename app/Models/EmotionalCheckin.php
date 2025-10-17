@@ -10,58 +10,107 @@ class EmotionalCheckin extends Model
 {
     use HasFactory;
 
-    protected $table = 'emotional_checkins'; // mapping ke tabel
+    protected $table = 'emotional_checkins';
+    public $incrementing = false; // karena UUID
+    protected $keyType = 'string';
 
     protected $fillable = [
+        'id',
         'user_id',
         'role',
         'mood',
-        'intensity',
+        'internal_weather',
+        'presence_level',
+        'capasity_level',
         'note',
         'checked_in_at',
+        'energy_level',
+        'balance',
+        'load',
+        'readiness',
+        'contact_id',
     ];
 
     protected $casts = [
         'checked_in_at' => 'datetime',
-        'intensity' => 'integer',
+        'presence_level' => 'integer',
+        'capasity_level' => 'integer',
+        'mood' => 'array',
     ];
 
     /**
-     * Relasi ke model User
-     * Setiap check-in dilakukan oleh satu user.
+     * 🚀 Otomatis buat UUID dan isi contact_id = 'no_need' jika kosong
      */
-
-    protected $keyType = 'string'; // UUID support
-    public $incrementing = false; // UUID tidak auto-increment
-
-
     protected static function booted()
     {
         static::creating(function ($model) {
+            // Generate UUID kalau belum ada
             if (empty($model->{$model->getKeyName()})) {
                 $model->{$model->getKeyName()} = (string) Str::uuid();
             }
+
+            // Jika contact_id kosong → isi 'no_need'
+            if (empty($model->contact_id)) {
+                $model->contact_id = 'no_need';
+            }
+        });
+
+        static::updating(function ($model) {
+            // Saat update, tetap ubah ke 'no_need' jika kosong
+            if (empty($model->contact_id)) {
+                $model->contact_id = 'no_need';
+            }
         });
     }
-    
+
+    /**
+     * Relasi ke user yang melakukan check-in
+     */
     public function user()
     {
         return $this->belongsTo(User::class, 'user_id', 'id');
     }
 
     /**
-     * Accessor tambahan: memberi label mood dengan emoji misalnya
+     * Relasi ke contact/penanggung jawab
+     */
+    public function contact()
+    {
+        return $this->belongsTo(User::class, 'contact_id', 'id');
+    }
+
+    /**
+     * Accessor untuk memastikan nilai 'no_need' dikembalikan apa adanya
+     */
+    public function getContactAttribute()
+    {
+        if ($this->contact_id === 'no_need') {
+            return ['id' => 'no_need', 'name' => 'No Need'];
+        }
+
+        $contact = $this->contact()->first();
+        return $contact ? ['id' => $contact->id, 'name' => $contact->name] : null;
+    }
+
+    /**
+     * Accessor tambahan: label mood dengan emoji
      */
     public function getMoodLabelAttribute()
     {
-        return match ($this->mood) {
-            'very_happy' => '😊 Very Happy',
-            'happy' => '🙂 Happy',
-            'neutral' => '😐 Neutral',
-            'sad' => '😢 Sad',
-            'stressed' => '😣 Stressed',
-            'angry' => '😡 Angry',
-            default => ucfirst($this->mood),
-        };
+        $moods = (array) $this->mood;
+
+        $labels = array_map(function ($mood) {
+            return match ($mood) {
+                'very_happy' => '😊 Very Happy',
+                'happy' => '🙂 Happy',
+                'neutral' => '😐 Neutral',
+                'sad' => '😢 Sad',
+                'stressed' => '😣 Stressed',
+                'angry' => '😡 Angry',
+                default => ucfirst($mood),
+            };
+        }, $moods);
+
+        return implode(', ', $labels);
     }
 }

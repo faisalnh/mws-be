@@ -46,11 +46,29 @@ class EmotionalCheckinsController extends Controller
     {
         $data = $request->validated();
 
+        // 1️⃣ Simpan data emotional check-in
         $result = $this->emotionalCheckinService->createEmotionalCheckin($data);
-
         $result->load(['user', 'contact']);
 
-        return $this->emotionalCheckinService->success(new DetailEmotionalCheckinResource($result),200,'Created Emotional Check-in Successfully'
+        // 2️⃣ Buat notifikasi baru
+        \App\Models\Notification::create([
+            'user_id' => $result->user_id,
+            'type' => 'emotional_checkin',
+            'payload' => [
+                'mood' => $result->mood,
+                'note' => $result->note,
+                'checked_in_at' => $result->checked_in_at,
+            ],
+            'is_read' => false,
+            'expired_at' => now()->addDays(7),
+            'delivered_at' => now(),
+        ]);
+
+        // 3️⃣ Kembalikan respons sukses
+        return $this->emotionalCheckinService->success(
+            new DetailEmotionalCheckinResource($result),
+            200,
+            'Created Emotional Check-in Successfully & Notification Sent'
         );
     }
 

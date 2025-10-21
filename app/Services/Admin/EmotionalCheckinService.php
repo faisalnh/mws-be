@@ -47,7 +47,7 @@ class EmotionalCheckinService
     public function searchEmotionalCheckin(array $relations = [], int $paginate = 10, ?string $search = null)
     {
         $query = EmotionalCheckin::with($relations)->orderByDesc('checked_in_at');
-
+        
         if ($search) {
             $query->where(function ($q) use ($search) {
                 $q->where('mood', 'like', "%{$search}%")
@@ -156,6 +156,7 @@ class EmotionalCheckinService
                 'load' => $data['load'] ?? $checkin->load,
                 'readiness' => $data['readiness'] ?? $checkin->readiness,
                 'contact_id' => $data['contact_id'] ?? $checkin->contact_id,
+                'ai_analysis' => $data['ai_analysis'] ?? $checkin->ai_analysis,
             ]);
 
             DB::commit();

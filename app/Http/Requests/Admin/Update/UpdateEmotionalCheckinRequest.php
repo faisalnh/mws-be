@@ -32,6 +32,7 @@ class UpdateEmotionalCheckinRequest extends FormRequest
             'readiness' => 'nullable|in:not_ready,somewhat_ready,ready',
             'note' => 'nullable|string|max:500',
             'contact_id' => 'nullable|integer|exists:users,id',
+            'ai_analysis' => 'nullable|string|max:255',
             'checked_in_at' => 'nullable|date',
         ];
     }

@@ -10,7 +10,7 @@ return new class extends Migration
     {
         Schema::create('emotional_checkins', function (Blueprint $table) {
             $table->uuid('id')->primary();
-            $table->unsignedBigInteger('user_id'); // mengacu ke users.id
+            $table->uuid('user_id'); 
 
             // 🧠 Informasi dasar
             $table->enum('role', ['student', 'teacher', 'parent', 'staff']);
@@ -47,7 +47,7 @@ return new class extends Migration
             $table->timestamps();
 
             // 🔗 Foreign key dan index
-            $table->foreign('user_id')->references('id')->on('users')->cascadeOnDelete();
+            $table->foreign('user_id')->references('uuid')->on('users')->cascadeOnDelete();
             $table->index(['user_id', 'checked_in_at']);
         });
     }

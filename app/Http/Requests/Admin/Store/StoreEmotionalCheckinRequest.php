@@ -22,10 +22,10 @@ class StoreEmotionalCheckinRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'user_id' => 'required|exists:users,id', // user yang melakukan check-in
+            'user_id' => 'required|exists:users,uuid', // user yang melakukan check-in
             'role' => 'required|string|max:50',
             'internal_weather' => 'nullable|string|max:255',
-            'mood' => 'required|string|max:50',
+            'mood' => 'required|string|max:255',
             'energy_level' => 'nullable|in:low,medium,high',
             'balance' => 'nullable|in:unbalanced,balanced,highly_balanced',
             'load' => 'nullable|in:light,moderate,heavy',
@@ -36,5 +36,6 @@ class StoreEmotionalCheckinRequest extends FormRequest
             'contact_id' => 'nullable|integer|exists:users,id',
             'checked_in_at' => 'required|date',
         ];
+        
     }
 }

@@ -1,0 +1,10 @@
+vendor
+node_modules
+storage/app/public
+storage/framework/cache/*
+storage/framework/sessions/*
+storage/framework/views/*
+storage/logs/*
+.env
+.env.*
+docker-compose.yml
